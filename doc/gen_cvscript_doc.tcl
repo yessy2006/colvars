@@ -38,6 +38,8 @@ proc gen_cmdline_latex_reference { output { main_cmd "cv" } } {
 
             foreach line [lrange ${lines} 2 end] {
                 set line [regsub -all "_" "${line}" "\\_"]
+                if { ${line} == "" || ${line} == "-------" } continue
+                set line [regsub -all "Returns" "${line}" "\\textbf\{Returns\}"]
                 if { ${line} == "" || ${line} == "----------" } continue
                 set line [regsub -all "Parameters" "${line}" "\\textbf\{Parameters\}"]
                 puts ${output} "\\\\"
