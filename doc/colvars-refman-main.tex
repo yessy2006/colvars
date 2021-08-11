@@ -17,6 +17,7 @@
 \cvnamdonly{
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}
+\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
 \def\cvscriptcmdapi{1} % Supports command-line scripting (via cv Tcl command)
 \newcommand{\cvscriptcmd}{cv}
 }
@@ -24,6 +25,7 @@
 \cvvmdonly{
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}
+\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
 \def\cvscriptcmdapi{1}
 \newcommand{\cvscriptcmd}{cv}
 }
@@ -1065,10 +1067,10 @@ A collective variable is defined by the keyword \texttt{colvar} followed by its 
 \item A user-defined mathematical function of the existing components (see list in section~\ref{sec:cvc_list}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is defined through the keyword \refkey{customFunction}{colvar|customFunction} (see \ref{sec:colvar_custom_function} for details).
 }
-\cvscriptonly{
+\ifdefined\cvscriptcallbacks{
 \item A user-defined Tcl function of the existing components (see list in section~\ref{sec:cvc_list}), or of the atomic coordinates directly (see the \texttt{cartesian} keyword in \ref{sec:cvc_cartesian}).
 The function is provided by a separate Tcl script, and referenced through the keyword \refkey{scriptedFunction}{colvar|scriptedFunction} (see \ref{sec:colvar_scripted} for details).
-}
+}\fi
 \end{itemize}
 Choosing a component (function) is the only parameter strictly required to define a collective variable.
 It is also highly recommended to specify a name for the variable:
@@ -2673,7 +2675,7 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
 \labelkey{colvar|distancePairs}
 
 The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional variable that includes all mutual distances between the atoms of two groups.
-This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.
+\ifdefined\cvscriptcallbacks{This can be useful, for example, to develop a new variable defined over two groups, by using the \texttt{scriptedFunction} feature.}\fi
 
 \begin{cvcoptions}
 \item %
@@ -3247,7 +3249,7 @@ These may be defined a custom functions if implemented\cvleptononly{ (see \ref{s
 
 \cvsubsec{Shared keywords for all components}{sec:cvc_common}
 
-The following options can be used for any of the above colvar components in order to obtain a polynomial combination\cvscriptonly{ or any user-supplied function provided by \refkey{scriptedFunction}{sec:cvc_superp}}.
+The following options can be used for any of the above colvar components in order to obtain a polynomial combination\ifdefined\cvscriptcallbacks{ or any user-supplied function provided by \refkey{scriptedFunction}{sec:cvc_superp}}\fi.
 \begin{itemize}
 \item %
   \keydef
@@ -3257,9 +3259,9 @@ The following options can be used for any of the above colvar components in orde
     string}{%
     type of component + numeric id}{%
     The name is an unique case-sensitive string which allows the
-    Colvars module to identify this component. This is useful, for example,
-    when combining multiple components via a \texttt{scriptedFunction}.
-    \cvnamdonly{It also defines the variable name representing the component's value in a \refkey{customFunction}{colvar|customFunction} expression.}}
+    Colvars module to identify this component. 
+    \ifdefined\cvscriptcallbacks{This is useful, for example, when combining multiple components via a \texttt{scriptedFunction}.}\fi
+    \cvleptononly{It also defines the variable name representing the component's value in a \refkey{customFunction}{colvar|customFunction} expression.}}
 
 \item %
   \keydef
@@ -3446,7 +3448,7 @@ Lepton produces efficient evaluation routines for the function and its derivativ
   \keydef
     {customFunctionType}{%
     \texttt{colvar}}{%
-    Type of value returned by the scripted colvar}{%
+    Type of value returned by the custom function}{%
     string}{%
     \texttt{scalar}}{%
     With this flag, the user may specify whether the
@@ -3538,7 +3540,7 @@ select & $\mathrm{select}(x, y, z) = z$ if $x=0$, $y$ otherwise\\
 }
 
 
-\cvscriptonly{
+\ifdefined\cvscriptcallbacks{
 \cvsubsec{Scripted functions}{sec:colvar_scripted}
 When scripting is supported\cvnamdonly{ (default in NAMD)}\cvvmdonly{ (default in VMD)},
 a colvar may be defined as a scripted function of its components,
@@ -3607,7 +3609,7 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
     set to \texttt{vector}. It defines the vector length of the colvar value
     returned by the function.}
 \end{itemize}
-} % \cvscriptonly
+}\fi % \ifdefined\cvscriptcallbacks
 
 
 
@@ -6276,7 +6278,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     Treat vector variables as multiple observations of a scalar variable?}{%
     UNIX filename}{%
     \texttt{off}}{%
-    When this is set to \texttt{on}, the components of a multi-dimensional colvar (e.g.~one based on \texttt{cartesian}, \texttt{distancePairs}, or a vector of scalar numbers given by \texttt{scriptedFunction}) are treated as multiple observations of a scalar variable.
+    When this is set to \texttt{on}, the components of a multi-dimensional colvar (e.g.~one based on \texttt{cartesian}, \texttt{distancePairs}\ifdefined\cvscriptcallbacks{, or a vector of scalar numbers given by \texttt{scriptedFunction}}\fi) are treated as multiple observations of a scalar variable.
     This results in the histogram being accumulated multiple times for each simulation step\cvvmdonly{ or iteration of \texttt{cv update}}).
     When multiple vector variables are included in \texttt{histogram}, these must have the same length because their components are accumulated together.
     For example, if $\xi$, $\lambda$ and $\tau$ are three variables of dimensions 5, 5 and 1, respectively, for each iteration 5 triplets $(\xi_{i},\lambda_{i},\tau)$ ($i = 1, \ldots 5$) are accumulated into a 3-dimensional histogram.
@@ -6490,7 +6492,7 @@ The list of options is as follows:
 \end{itemize}
 
 
-\cvscriptonly{%
+\ifdefined\cvscriptcallbacks{
 \cvsubsec{Defining scripted biases}{sec:scripted_biases}
 
 Rather than using the biasing methods described above, it is possible to apply biases
@@ -6546,7 +6548,7 @@ The following options allow to fine-tune this schedule:
     to increase performance.}
 \end{itemize}
 
-}
+}\fi % \ifdefined\cvscriptcallbacks
 
 
 \cvscriptonly{
